@@ -22,7 +22,7 @@ class MediaService:
             return {
                 "status": "success",
                 "original_file": filename,
-                "converted_file": output_filename,
+                "filename": output_filename,
                 "path": output_path
             }
         except ffmpeg.Error as e:
