@@ -1,0 +1,78 @@
+services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - swiss-knife-network
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: swiss-knife-api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      - redis
+    volumes:
+      - ./apps/api:/app
+      - swiss_knife_storage:/storage
+    networks:
+      - swiss-knife-network
+
+  worker:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: swiss-knife-worker
+    command: celery -A worker.celery_app worker --loglevel=info
+    restart: always
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      - redis
+      - api
+    volumes:
+      - ./apps/api:/app
+      - swiss_knife_storage:/storage
+    networks:
+      - swiss-knife-network
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: swiss-knife-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+    depends_on:
+      - api
+    networks:
+      - swiss-knife-network
+
+volumes:
+  redis_data:
+  swiss_knife_storage:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ./storage
+
+networks:
+  swiss-knife-network:
+    driver: bridge
