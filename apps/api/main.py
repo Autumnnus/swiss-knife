@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
-from routers import general, youtube, converter, image
+from routers import general, youtube, converter, image, media
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -22,6 +22,7 @@ app.include_router(general.router, prefix=settings.API_V1_STR, tags=["general"])
 app.include_router(youtube.router, prefix=f"{settings.API_V1_STR}/youtube", tags=["youtube"])
 app.include_router(converter.router, prefix=f"{settings.API_V1_STR}/converter", tags=["converter"])
 app.include_router(image.router, prefix=f"{settings.API_V1_STR}/image", tags=["image"])
+app.include_router(media.router, prefix=f"{settings.API_V1_STR}/media", tags=["media"])
 
 @app.get("/")
 def root():

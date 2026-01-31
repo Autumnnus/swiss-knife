@@ -37,3 +37,18 @@ def process_image_task(self, input_path: str, action: str, params: dict):
 def ocr_image_task(self, input_path: str, lang: str):
     self.update_state(state='PROCESSING', meta={'step': 'ocr'})
     return image_service.extract_text(input_path, lang)
+
+@celery_app.task(name="compress_media", bind=True)
+def compress_media_task(self, input_path: str, crf: int):
+    self.update_state(state='PROCESSING', meta={'step': 'compressing'})
+    return media_service.compress_video(input_path, crf)
+
+@celery_app.task(name="cut_media", bind=True)
+def cut_media_task(self, input_path: str, start_time: str, end_time: str):
+    self.update_state(state='PROCESSING', meta={'step': 'cutting'})
+    return media_service.cut_video(input_path, start_time, end_time)
+
+@celery_app.task(name="create_gif", bind=True)
+def create_gif_task(self, input_path: str, fps: int, width: int):
+    self.update_state(state='PROCESSING', meta={'step': 'creating_gif'})
+    return media_service.create_gif(input_path, fps, width)

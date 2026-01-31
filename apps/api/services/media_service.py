@@ -30,4 +30,70 @@ class MediaService:
             error_message = e.stderr.decode('utf8') if e.stderr else str(e)
             raise Exception(f"Conversion failed: {error_message}")
 
+    def compress_video(self, input_path: str, crf: int = 28):
+        filename = os.path.basename(input_path)
+        base_name, ext = os.path.splitext(filename)
+        output_filename = f"{base_name}_compressed{ext}"
+        output_path = os.path.join(self.download_path, output_filename)
+
+        try:
+            # CRF 28 is a good balance for compression
+            stream = ffmpeg.input(input_path)
+            stream = ffmpeg.output(stream, output_path, vcodec='libx264', crf=crf)
+            ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
+
+            return {
+                "status": "success",
+                "original_file": filename,
+                "filename": output_filename,
+                "path": output_path
+            }
+        except ffmpeg.Error as e:
+            error_message = e.stderr.decode('utf8') if e.stderr else str(e)
+            raise Exception(f"Compression failed: {error_message}")
+
+    def cut_video(self, input_path: str, start_time: str, end_time: str):
+        filename = os.path.basename(input_path)
+        base_name, ext = os.path.splitext(filename)
+        output_filename = f"{base_name}_cut{ext}"
+        output_path = os.path.join(self.download_path, output_filename)
+
+        try:
+            stream = ffmpeg.input(input_path, ss=start_time, to=end_time)
+            stream = ffmpeg.output(stream, output_path, c='copy') # Stream copy for speed
+            ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
+
+            return {
+                "status": "success",
+                "original_file": filename,
+                "filename": output_filename,
+                "path": output_path
+            }
+        except ffmpeg.Error as e:
+            error_message = e.stderr.decode('utf8') if e.stderr else str(e)
+            raise Exception(f"Cutting failed: {error_message}")
+
+    def create_gif(self, input_path: str, fps: int = 10, width: int = 480):
+        filename = os.path.basename(input_path)
+        base_name = os.path.splitext(filename)[0]
+        output_filename = f"{base_name}.gif"
+        output_path = os.path.join(self.download_path, output_filename)
+
+        try:
+            stream = ffmpeg.input(input_path)
+            stream = ffmpeg.filter(stream, 'fps', fps=fps)
+            stream = ffmpeg.filter(stream, 'scale', width=width, height=-1)
+            stream = ffmpeg.output(stream, output_path, loop=0)
+            ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
+
+            return {
+                "status": "success",
+                "original_file": filename,
+                "filename": output_filename,
+                "path": output_path
+            }
+        except ffmpeg.Error as e:
+            error_message = e.stderr.decode('utf8') if e.stderr else str(e)
+            raise Exception(f"GIF creation failed: {error_message}")
+
 media_service = MediaService()
