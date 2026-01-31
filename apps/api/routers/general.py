@@ -25,38 +25,41 @@ def ping_celery():
 def get_task_status(task_id: str):
     task_result = AsyncResult(task_id, app=celery_app)
     
-    # Safely get result to avoid serialization errors with Exceptions
-    result = task_result.result
-    if isinstance(result, Exception):
-        result = str(result)
-    
-    response = {
+    # Use .info instead of .result to avoid exception deserialization issues
+    info = task_result.info
+    result = None
+    error = None
+    step = None
+
+    if task_result.status == "SUCCESS":
+        result = info
+    elif task_result.status == "FAILURE":
+        error = str(info)
+    elif isinstance(info, dict):
+        # This handles custom states like 'PROCESSING' with metadata
+        step = info.get("step")
+        result = info.get("result")
+        if not error:
+            error = info.get("error")
+
+    return {
         "task_id": task_id,
         "status": task_result.status,
-        "result": result if task_result.ready() else None
+        "result": result,
+        "error": error,
+        "step": step
     }
-    
-    # If custom meta or result is a dict, merge it
-    # Note: task_result.info is either error, metadata (if custom state), or return value (if success)
-    if isinstance(task_result.info, dict):
-        response.update(task_result.info)
-        
-    # Crucial: Ensure the Celery status (SUCCESS, FAILURE, PROCESSING) 
-    # is not overwritten by any dictionary's internal "status" key.
-    response["status"] = task_result.status
-        
-    return response
 
 @router.get("/download/{filename}")
 def download_file(filename: str):
-    file_path = os.path.join("/storage/downloads", filename)
+    file_path = os.path.join(f"{settings.STORAGE_PATH}/downloads", filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(file_path, filename=filename)
 
 @router.get("/downloads")
 def list_downloads():
-    download_dir = "/storage/downloads"
+    download_dir = f"{settings.STORAGE_PATH}/downloads"
     if not os.path.exists(download_dir):
         return []
     

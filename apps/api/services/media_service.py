@@ -1,8 +1,9 @@
 import ffmpeg
 import os
+from core.config import settings
 
 class MediaService:
-    def __init__(self, storage_path: str = "/storage"):
+    def __init__(self, storage_path: str = settings.STORAGE_PATH):
         self.upload_path = f"{storage_path}/uploads"
         self.download_path = f"{storage_path}/downloads"
         os.makedirs(self.upload_path, exist_ok=True)

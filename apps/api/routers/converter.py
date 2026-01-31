@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
+from core.config import settings
 
 router = APIRouter()
 
@@ -11,7 +12,7 @@ def convert_video(file: UploadFile = File(...), target_format: str = "mp3"):
     from worker import celery_app
     
     # Ensure upload directory exists
-    upload_dir = "/storage/uploads"
+    upload_dir = f"{settings.STORAGE_PATH}/uploads"
     os.makedirs(upload_dir, exist_ok=True)
     
     # Save uploaded file

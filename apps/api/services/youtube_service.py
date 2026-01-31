@@ -1,9 +1,10 @@
 import yt_dlp
 import os
+from core.config import settings
 import uuid
 
 class YouTubeService:
-    def __init__(self, download_path: str = "/storage/downloads"):
+    def __init__(self, download_path: str = f"{settings.STORAGE_PATH}/downloads"):
         self.download_path = download_path
         os.makedirs(self.download_path, exist_ok=True)
 
