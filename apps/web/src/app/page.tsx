@@ -4,25 +4,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, RefreshCcw, Youtube } from "lucide-react";
+import { ArrowRight, Film, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 
-const features = [
+const mainCategories = [
   {
-    name: "YouTube Downloader",
-    description: "Download videos and audio from YouTube in high quality.",
-    href: "/media/youtube",
-    icon: Youtube,
-    color: "text-red-500",
-    bg: "bg-red-500/10",
-  },
-  {
-    name: "Media Converter",
-    description: "Convert between different video and audio formats.",
-    href: "/media/converter",
-    icon: RefreshCcw,
+    name: "Media Tools",
+    description:
+      "YouTube downloader, Video converter, Compressor and GIF maker.",
+    href: "/media",
+    icon: Film,
     color: "text-blue-500",
     bg: "bg-blue-500/10",
+  },
+  {
+    name: "Visual Tools",
+    description:
+      "Format converter, Background remover, OCR and Batch processor.",
+    href: "/visual",
+    icon: ImageIcon,
+    color: "text-pink-500",
+    bg: "bg-pink-500/10",
   },
 ];
 
@@ -39,21 +41,23 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {features.map((feature) => (
-          <Link key={feature.name} href={feature.href}>
-            <Card className="h-full hover:shadow-lg transition-all group cursor-pointer border-2 hover:border-primary/20">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 max-w-4xl">
+        {mainCategories.map((category) => (
+          <Link key={category.name} href={category.href}>
+            <Card className="h-full hover:shadow-xl transition-all group cursor-pointer border-2 hover:border-primary/40 p-2">
               <CardHeader>
                 <div
-                  className={`w-12 h-12 rounded-xl ${feature.bg} flex items-center justify-center ${feature.color} mb-2`}
+                  className={`w-14 h-14 rounded-2xl ${category.bg} flex items-center justify-center ${category.color} mb-4 group-hover:scale-110 transition-transform`}
                 >
-                  <feature.icon className="w-6 h-6" />
+                  <category.icon className="w-8 h-8" />
                 </div>
-                <CardTitle className="flex items-center gap-2 group-hover:text-primary transition-colors">
-                  {feature.name}
-                  <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                <CardTitle className="text-2xl flex items-center gap-2 group-hover:text-primary transition-colors">
+                  {category.name}
+                  <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                 </CardTitle>
-                <CardDescription>{feature.description}</CardDescription>
+                <CardDescription className="text-base">
+                  {category.description}
+                </CardDescription>
               </CardHeader>
             </Card>
           </Link>

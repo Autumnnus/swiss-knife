@@ -3,6 +3,12 @@ import pytesseract
 import os
 from core.config import settings
 import uuid
+try:
+    from rembg import remove
+    REM_BG_AVAILABLE = True
+except ImportError:
+    REM_BG_AVAILABLE = False
+import io
 
 class ImageService:
     def __init__(self, storage_path: str = settings.STORAGE_PATH):
@@ -17,8 +23,15 @@ class ImageService:
         """
         filename = os.path.basename(input_path)
         base_name = os.path.splitext(filename)[0]
+        params = params or {}
         
         with Image.open(input_path) as img:
+            # Handle RGBA to RGB for JPEG if needed
+            if action != "remove_bg" and img.mode in ("RGBA", "P"):
+                target_format = params.get("format", "PNG").upper()
+                if target_format == "JPEG" or target_format == "JPG":
+                    img = img.convert("RGB")
+
             if action == "resize":
                 width = params.get("width", img.width)
                 height = params.get("height", img.height)
@@ -28,12 +41,28 @@ class ImageService:
                 img = img.rotate(degrees, expand=True)
             elif action == "grayscale":
                 img = img.convert("L")
+            elif action == "remove_bg":
+                if not REM_BG_AVAILABLE:
+                    raise Exception("Background removal is not available. Please install 'rembg' and 'onnxruntime'.")
+                # Convert PIL to bytes for rembg
+                img_byte_arr = io.BytesIO()
+                img.save(img_byte_arr, format='PNG')
+                result_bytes = remove(img_byte_arr.getvalue())
+                img = Image.open(io.BytesIO(result_bytes))
             
             target_format = params.get("format", img.format or "PNG").upper()
+            if target_format == "JPG": target_format = "JPEG"
+            
             output_filename = f"{base_name}_{action}.{target_format.lower()}"
             output_path = os.path.join(self.download_path, output_filename)
             
-            img.save(output_path, format=target_format)
+            save_params = {}
+            if target_format == "JPEG":
+                save_params["quality"] = params.get("quality", 85)
+            elif target_format == "WEBP":
+                save_params["quality"] = params.get("quality", 80)
+            
+            img.save(output_path, format=target_format, **save_params)
             
             return {
                 "status": "success",

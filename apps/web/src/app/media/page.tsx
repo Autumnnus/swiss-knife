@@ -6,14 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ArrowRight,
-  FileAudio,
-  FileVideo,
-  Film,
-  Image as ImageIcon,
-  Youtube,
-} from "lucide-react";
+import { ArrowRight, FileAudio, FileVideo, Film, Youtube } from "lucide-react";
 import Link from "next/link";
 
 const mediaFeatures = [
@@ -48,14 +41,6 @@ const mediaFeatures = [
     icon: Film,
     color: "text-purple-500",
     bg: "bg-purple-500/10",
-  },
-  {
-    name: "Image Tools & OCR",
-    description: "Process images or extract text using OCR.",
-    href: "/media/image",
-    icon: ImageIcon,
-    color: "text-orange-500",
-    bg: "bg-orange-500/10",
   },
 ];
 

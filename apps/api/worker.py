@@ -3,6 +3,7 @@ from core.config import settings
 from services.youtube_service import youtube_service
 from services.media_service import media_service
 from services.image_service import image_service
+import os
 
 celery_app = Celery(
     "worker",
