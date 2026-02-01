@@ -1,9 +1,9 @@
-import os
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from celery.result import AsyncResult
 from core.config import settings
 from worker import celery_app
+import os
 
 router = APIRouter()
 
@@ -50,30 +50,22 @@ def get_task_status(task_id: str):
         "step": step
     }
 
+def remove_file(path: str):
+    """Background task to remove file after download"""
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+            # Also try to remove the source upload if it exists
+            # This is a bit tricky as we don't always have the input path here
+    except Exception:
+        pass
+
 @router.get("/download/{filename}")
-def download_file(filename: str):
+def download_file(filename: str, background_tasks: BackgroundTasks):
     file_path = os.path.join(f"{settings.STORAGE_PATH}/downloads", filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
+    
+    background_tasks.add_task(remove_file, file_path)
     return FileResponse(file_path, filename=filename)
-
-@router.get("/downloads")
-def list_downloads():
-    download_dir = f"{settings.STORAGE_PATH}/downloads"
-    if not os.path.exists(download_dir):
-        return []
-    
-    files = []
-    for f in os.listdir(download_dir):
-        if os.path.isfile(os.path.join(download_dir, f)) and not f.startswith('.'):
-            stats = os.stat(os.path.join(download_dir, f))
-            files.append({
-                "filename": f,
-                "size": stats.st_size,
-                "created_at": stats.st_ctime
-            })
-    
-    # Sort by created_at descending
-    files.sort(key=lambda x: x['created_at'], reverse=True)
-    return files
 
