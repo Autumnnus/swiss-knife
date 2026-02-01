@@ -12,3 +12,5 @@ python-multipart>=0.0.9
 pytesseract>=0.3.10
 rembg>=2.0.53
 onnxruntime>=1.16.0
+markdown>=3.5.2
+xhtml2pdf>=0.2.11

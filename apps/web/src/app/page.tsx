@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowRight, Film, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, Film, Image as ImageIcon, Type } from "lucide-react";
 import Link from "next/link";
 
 const mainCategories = [
@@ -26,6 +26,15 @@ const mainCategories = [
     color: "text-pink-500",
     bg: "bg-pink-500/10",
   },
+  {
+    name: "Text Tools",
+    description:
+      "JSON formatter, Base64 tool, Markdown converter and Diff checker.",
+    href: "/text",
+    icon: Type,
+    color: "text-indigo-500",
+    bg: "bg-indigo-500/10",
+  },
 ];
 
 export default function Home() {
@@ -41,7 +50,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 max-w-4xl">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {mainCategories.map((category) => (
           <Link key={category.name} href={category.href}>
             <Card className="h-full hover:shadow-xl transition-all group cursor-pointer border-2 hover:border-primary/40 p-2">
